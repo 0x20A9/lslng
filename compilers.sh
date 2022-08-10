@@ -64,18 +64,15 @@ get_javac() {
 
 # -------------------------------------
 
-printf "\n\n"
+printf "\n\n\n"
 
-
-# in alphabetical order
 
 
 branch() {
-	bchar="└─"
 	lang="$1"
 	lst="$2"
-	#declare -a arr=("$@")
-	printf "─ ${lang}\n"
+	printf "${lang}\n"
+	#printf "─ ${lang}\n"
 	
 	for name in $lst
 	#for name in "${arr[@]:1}"
@@ -88,13 +85,13 @@ branch() {
 		
 		if [[ $version ]];
 		then # yes it's found
-			printf "  $bchar $name $version\n"
+			printf "  └─ $name ─ $version\n"
 		else # no it's not
 			printf ""
 		fi
 
 	done
-printf "\n"
+#printf "\n"
 }
 
 branch "C" "clang gcc"
@@ -104,5 +101,6 @@ branch "java" "javac"
 
 
 
+printf "\n\n\n"
 
 

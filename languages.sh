@@ -28,6 +28,7 @@ get_lang() {
 
 }
 
+printf "\n\n\n"
 
 get_lang "python" "python --version | grep -E -o '[0-9]+\.[0-9]+\.[0-9]+'"
 get_lang "lua" "lua -v | grep -E -o -m 1 '[0-9]+\.[0-9]+\.[0-9]+'| head -n 1"
@@ -40,4 +41,5 @@ get_lang "php" "php -v | grep -E -o -m 1 '[0-9]+\.[0-9]+\.[0-9]+'| head -n 1"
 
 
 
+printf "\n\n\n"
 
