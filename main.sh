@@ -155,7 +155,7 @@ lang_main() {
 	get_lang "lua" "lua -v | grep -E -o -m 1 '[0-9]+\.[0-9]+\.[0-9]+'| head -n 1"
 	get_lang "go" "go env GOVERSION | sed -e 's/^go//' -e 's/$/.0/'"
 	get_lang "java" "java -version 2>&1 | head -n 1 | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+'"
-	#get_lang "perl" "perl -e 'print substr($^V, 1)' >/dev/null 2>&1"
+	get_lang "perl" "{ perl -e 'print substr($^V, 1)' > temp.txt; }>/dev/null 2>&1; cat temp.txt"
 	get_lang "ruby" "ruby --version | grep -E -o -m 1 '[0-9]+\.[0-9]+\.[0-9]+'| head -n 1"
 	get_lang "php" "php -v | grep -E -o -m 1 '[0-9]+\.[0-9]+\.[0-9]+'| head -n 1"
 
