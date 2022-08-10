@@ -60,14 +60,26 @@ get_javac() {
 
 # -------------------------------------
 
+get_compiler_info() {
+	inp="$1"
+	set -- $inp
+
+	if command -v $1 >/dev/null 2>&1; 
+	then
+		v=$(javac -version | grep -E -o '[0-9]+\.[0-9]+\.[0-9]+')
+		echo $v
+	else
+		echo ""
+	fi
+}
 
 branch() {
 
-	start="└─"
+	#start="└─"
 	
 	lang="$1"
 	lst="$2"
-	printf "$start ${lang}\n"
+	printf "${lang}\n"
 	#printf "─ ${lang}\n"
 	
 	for name in $lst
@@ -81,7 +93,7 @@ branch() {
 		
 		if [[ $version ]];
 		then # yes it's found
-			printf "   $start $name ─ $version\n"
+			printf "   - $name ─ $version\n"
 		else # no it's not
 			printf ""
 		fi
@@ -121,8 +133,6 @@ get_v() {
 
 get_lang() {
 	
-	start="└─"
-	
 	lang="$1"
 	cmd="$2"
 	
@@ -130,7 +140,7 @@ get_lang() {
 	
 	if [[ $version ]];
 	then # yes it's found
-		printf "   $start $lang ─ $version\n"
+		printf "   - $lang ─ $version\n"
 	else # no it's not
 		printf ""
 	fi
