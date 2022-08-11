@@ -268,6 +268,7 @@ get_shells() {
 }
 
 
+printf "\n\n\n"
 
 get_python	
 get_lua
@@ -277,6 +278,6 @@ get_php
 get_ruby
 get_c
 get_rust
-
 get_shells
 
+printf "\n\n\n"
