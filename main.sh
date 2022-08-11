@@ -1,183 +1,213 @@
+#!/bin/sh
 
-# -------------------------------------
-get_gcc() {
-	local v=""
-	if command -v gcc >/dev/null 2>&1; 
-	then
-		v=$(gcc -dumpversion)
-		echo $v
-	else
-		echo ""
-	fi
+# shebang
+
+
+# --------------------------------------------------------------------
+# version info search regex aided by https://stackoverflow.com/a/19854164
+# --------------------------------------------------------------------
+
+
+
+pprint() {
+	Color_Off='\033[0m'       # Text Reset
+	BYellow='\033[1;33m'      # Yellow
+	BWhite='\033[1;37m'       # White
+	White='\033[0;37m'        # White
+	printf " $BYellow$1$Color_Off $White--$Color_Off $2\n"
+	return
+
 }
 
-get_gplusplus() {
-	local v=""
-	if command -v g++ >/dev/null 2>&1; 
-	then
-		v=$(g++ -dumpversion)
-		echo $v
-	else
-		echo ""
-	fi
-}
-
-get_clang() {
-	local v=""
-	if command -v clang >/dev/null 2>&1; 
-	then
-		v=$(clang -dumpversion)
-		echo $v
-	else
-		echo ""
-	fi
-}
-
-get_rustc() {
-	local v=""
-	if command -v rustc >/dev/null 2>&1; 
-	then
-		v=$(rustc -Vv | tail -n+2 | grep release | awk '{print $2}') 
-		echo $v
-	else
-		echo ""
-	fi
-}
-
-get_javac() {
-	local v=""
-	if command -v javac >/dev/null 2>&1; 
-	then
-		v=$(javac -version | grep -E -o '[0-9]+\.[0-9]+\.[0-9]+')
-		echo $v
-	else
-		echo ""
-	fi
-}
-
-
-# -------------------------------------
-
-get_compiler_info() {
-	inp="$1"
-	set -- $inp
-
-	if command -v $1 >/dev/null 2>&1; 
-	then
-		v=$(javac -version | grep -E -o '[0-9]+\.[0-9]+\.[0-9]+')
-		echo $v
-	else
-		echo ""
-	fi
-}
-
-branch() {
-
-	#start="└─"
+get_python() {
 	
-	lang="$1"
-	lst="$2"
-	printf "${lang}\n"
-	#printf "─ ${lang}\n"
+	count=0
 	
-	for name in $lst
-	#for name in "${arr[@]:1}"
+	# normal pythons & alias python
+	# compatible w/ Python 2.4-
+		
+
+	for item in "python" "python3" "python2"
 	do
-		# format command
-		command="get_${name}"
-		command=${command//"++"/"plusplus"} # cant name func w/ ++
 		
-		version=$($command)
-		
-		if [[ $version ]];
-		then # yes it's found
-			printf "   - $name ─ $version\n"
-		else # no it's not
-			printf ""
+		if command -v $item >/dev/null 2>&1;
+		then
+			version=$( $item -c 'import sys; print(".".join([str(v) for v in sys.version_info[:3]]))' )
+			pprint "$item" "$version"
+			count=$((count + 1))
 		fi
+	done
+
+	
+
+	if (( $count == 0 )); then
+		return
+	fi
+
+}
+
+get_lua() {
+	if ! command -v lua >/dev/null 2>&1;
+	then
+		return
+	fi
+	
+	version=$(lua -v | grep -E -o -m 1 '([0-9]+([.][0-9]+)+)')
+	pprint "lua" "$version"
+	
+	for item in "luac" "luajit"
+	do
+
+		if command -v $item >/dev/null 2>&1;
+		then
+			version=$($item -v | grep -E -o -m 1 '([0-9]+([.][0-9]+)+)')
+			pprint "$item" "$version"
+		fi
+	done		
+}
+
+get_perl() {
+	if ! command -v perl >/dev/null 2>&1;
+	then
+		return
+	fi
+
+	{ version=$(perl -e 'print substr($^V, 1)'); } 2>/dev/null; #https://unix.stackexchange.com/a/428508
+	pprint "perl" "$version"
+}
+
+
+get_go() {
+	if ! command -v go >/dev/null 2>&1;
+	then
+		return
+	fi
+	
+	version=$(go env GOVERSION | sed -e 's/^go//')
+	
+	#if [ "$version" == "unknown" ]; 
+	#then
+	#	printf "" # TODO fix error; must use pkg info
+	#fi	
+	pprint "go" "$version"
+
+	if command -v gccgo >/dev/null 2>&1;
+	then
+		version=$(gccgo --version | grep -E -o '[0-9]+\.[0-9]+\.[0-9]+')
+		pprint "gccgo" "$version"
+	fi
+	return
+}
+
+get_php() {
+	if ! command -v php >/dev/null 2>&1;
+	then
+		return
+	fi
+	
+	# aliased main
+	version=$(php -v | grep -E -o -m 1 '([0-9]+([.][0-9]+)+)')
+	pprint "php" "$version"
+
+	for major in {4..10}
+	do
+		for minor in {1..9}
+		do
+			p="php$major.$minor"
+			if command -v "$p" >/dev/null 2>&1;
+			then
+				version=$("$p" -v | grep -E -o -m 1 '([0-9]+([.][0-9]+)+)')
+				pprint "$p" "$version"
+			
+			fi
+		done
 
 	done
-#printf "\n"
+
+	return
 }
 
-
-compilers_main() {
-
-	printf "compilers\n"
-
-	branch "C" "clang gcc"
-	branch "C++" "g++"
-	branch "rust" "rustc"
-	branch "java" "javac"
-
-
-}
-
-
-# -------------------------------------
-
-
-get_v() {
-	lang="$1"
-	cmd="$2"
-	if command -v $lang >/dev/null 2>&1; 
+get_ruby() {
+	#TODO there could be more versions
+	if ! command -v ruby >/dev/null 2>&1;
 	then
-		#printf "─ $lang"
-		eval $cmd
-	else
-		printf ""
+		return
 	fi
-}
-
-get_lang() {
 	
-	lang="$1"
-	cmd="$2"
+
+	version=$(ruby --version | grep -E -o -m 1 '([0-9]+([.][0-9]+)+)')
+	pprint "ruby" "$version"
 	
-	version=$(get_v "$lang" "$cmd")
+	# TODO; pkg manager gem; to add or not to add 
 	
-	if [[ $version ]];
-	then # yes it's found
-		printf "   - $lang ─ $version\n"
-	else # no it's not
-		printf ""
-	fi
+	for item in "rake"
+	do	
+		if command -v $item >/dev/null 2>&1;
+		then
+			version=$($item --version | grep -E -o -m 1 '([0-9]+([.][0-9]+)+)')
+			pprint "$item" "$version"
+		fi
+	done
 
-}
-
-
-lang_main() {
-
-
-	printf "langauges\n"
-
-	get_lang "python" "python --version | grep -E -o '[0-9]+\.[0-9]+\.[0-9]+'"
-	get_lang "lua" "lua -v | grep -E -o -m 1 '[0-9]+\.[0-9]+\.[0-9]+'| head -n 1"
-	get_lang "go" "go env GOVERSION | sed -e 's/^go//' -e 's/$/.0/'"
-	get_lang "java" "java -version 2>&1 | head -n 1 | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+'"
-	get_lang "perl" "{ perl -e 'print substr($^V, 1)' > temp.txt; }>/dev/null 2>&1; cat temp.txt"
-	get_lang "ruby" "ruby --version | grep -E -o -m 1 '[0-9]+\.[0-9]+\.[0-9]+'| head -n 1"
-	get_lang "php" "php -v | grep -E -o -m 1 '[0-9]+\.[0-9]+\.[0-9]+'| head -n 1"
-
-
+	return
 
 }
 
-# -------------------------------------
 
-printf "\n\n\n"
+get_c() {
+	count=0
+	
+	for item in "gcc" "g++" "make" "clang" "cmake" "gmake"
+	do 
+		if command -v $item >/dev/null 2>&1;
+		then
+			version=$($item --version | grep -E -o -m 1 '([0-9]+([.][0-9]+)+)' | head -n 1)
+			pprint "$item" "$version"
+			count=$((count + 1))
+		fi
+	
+	done
 
-compilers_main
-printf "\n"
-lang_main
-
-printf "\n\n\n"
+	return
+}
 
 
+get_rust() {
+	for item in "rustc" "cargo"
+	do
+		if command -v $item >/dev/null 2>&1;
+		then
+			version=$($item --version | grep -E -o -m 1 '([0-9]+([.][0-9]+)+)' | head -n 1)
+			pprint "$item" "$version"
+		fi
+	done
+
+	return
+}
+
+get_shells() {
+	for item in "bash" "zsh" "fish"
+	do
+		if command -v $item >/dev/null 2>&1;
+		then
+			version=$($item --version | grep -E -o -m 1 '([0-9]+([.][0-9]+)+)')
+			pprint "$item" "$version"
+		fi
+	done
+
+
+}
 
 
 
+get_python	
+get_lua
+get_perl
+get_go
+get_php
+get_ruby
+get_c
+get_rust
 
-
-
+get_shells
 
